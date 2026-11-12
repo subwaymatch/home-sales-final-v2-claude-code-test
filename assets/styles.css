@@ -197,7 +197,7 @@ nav.toc a:hover { text-decoration: underline; }
   padding: 0.35rem 0.5rem;
   border: 1px solid var(--field-edge);
   border-radius: 4px;
-  background: var(--field);
+  background-color: var(--field);
   width: 100%;
   min-width: 0;
   min-height: 2.5rem;
@@ -215,7 +215,7 @@ nav.toc a:hover { text-decoration: underline; }
   gap: 0.5rem;
   align-items: center;
 }
-.range-row input[type="range"] { width: 100%; accent-color: var(--accent); }
+.range-row input[type="range"] { width: 100%; }
 .range-hint { font-size: 0.85rem; color: var(--ink-2); margin: 0; }
 
 .keynums {
@@ -279,6 +279,8 @@ table {
   table-layout: auto;
 }
 th, td {
+  overflow-wrap: normal;
+  word-break: normal;
   padding: 0.3rem 0.6rem;
   border-bottom: 1px solid var(--rule);
   text-align: left;
@@ -297,9 +299,6 @@ th button {
   cursor: pointer;
   text-align: inherit;
 }
-th button::after { content: " \2195"; color: var(--ink-2); font-weight: 400; }
-th[aria-sort="ascending"] button::after { content: " \25B2"; color: var(--ink); }
-th[aria-sort="descending"] button::after { content: " \25BC"; color: var(--ink); }
 
 .error { color: var(--error); font-weight: 600; }
 .status { font-size: 0.9rem; color: var(--ink-2); min-height: 1.4em; }
@@ -363,4 +362,202 @@ code { font-size: 0.92em; background: var(--surface); padding: 0.05rem 0.3rem; b
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+
+/* ---------- Controls: styled to match the site, with hover and keyboard focus states ---------- */
+
+button, select, input, textarea {
+  font-family: inherit;
+}
+
+select,
+input[type="number"] {
+  min-height: 2.5rem;
+  border: 1px solid var(--field-edge);
+  border-radius: 6px;
+  background-color: var(--field);
+  color: var(--ink);
+  font-size: 1rem;
+  padding: 0.4rem 0.7rem;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+select {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 2.2rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%234b5866' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 12px 8px;
+  cursor: pointer;
+}
+
+:root[data-theme="dark"] select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%23a9b5c3' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+select:hover,
+input[type="number"]:hover {
+  border-color: var(--ink-2);
+}
+
+select:focus-visible,
+input[type="number"]:focus-visible,
+input[type="range"]:focus-visible {
+  outline: none;
+  border-color: var(--accent-2);
+  box-shadow: 0 0 0 3px var(--accent-2-soft);
+}
+
+input[type="number"]::placeholder {
+  color: var(--ink-2);
+  opacity: 0.75;
+}
+
+/* Sliders: a thin track with a round thumb in the teal accent */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 1.75rem;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--rule);
+}
+input[type="range"]::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--rule);
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: -7px;
+  border-radius: 50%;
+  border: 2px solid var(--paper);
+  background: var(--accent-2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 120ms ease;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--paper);
+  background: var(--accent-2);
+}
+input[type="range"]:hover::-webkit-slider-thumb { transform: scale(1.12); }
+input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px var(--accent-2-soft); }
+input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 3px var(--accent-2-soft); }
+
+/* Buttons */
+.btn {
+  min-height: 2.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--field);
+  border: 1px solid var(--field-edge);
+  border-radius: 6px;
+  padding: 0.45rem 1rem;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+.btn:hover {
+  background: var(--surface);
+  border-color: var(--ink-2);
+}
+.btn:active { transform: translateY(1px); }
+.btn:focus-visible,
+button:focus-visible,
+a:focus-visible,
+summary:focus-visible {
+  outline: 3px solid var(--accent-2);
+  outline-offset: 2px;
+}
+
+/* Theme switch: a track with a sliding knob. On means dark mode. */
+.switch {
+  position: relative;
+  min-height: 2.5rem;
+  padding: 0.45rem 0 0.45rem 3.4rem;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.switch::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 2.6rem;
+  height: 1.45rem;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: var(--rule);
+  transition: background-color 160ms ease;
+}
+.switch::after {
+  content: "";
+  position: absolute;
+  left: 0.2rem;
+  top: 50%;
+  width: 1.05rem;
+  height: 1.05rem;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: left 160ms ease;
+}
+.switch[aria-pressed="true"]::before { background: var(--accent-2); }
+.switch[aria-pressed="true"]::after { left: 1.35rem; }
+.switch:hover::before { filter: brightness(0.95); }
+.switch:focus-visible {
+  outline: 3px solid var(--accent-2);
+  outline-offset: 3px;
+  border-radius: 999px;
+}
+
+/* Sortable table headers: an SVG icon shows the sort state */
+th button {
+  white-space: normal;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--ink);
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 0.1rem 0.15rem;
+  margin: -0.1rem -0.15rem;
+  transition: color 120ms ease;
+}
+th button:hover { color: var(--accent-2); }
+th button:hover .sort-icon .up,
+th button:hover .sort-icon .down { fill: var(--accent-2); }
+.sort-icon { flex: none; display: block; }
+.sort-icon path { fill: var(--quiet-2); transition: fill 120ms ease; }
+.sort-icon.asc .up,
+.sort-icon.desc .down { fill: var(--ink); }
+
+/* Hover on table rows */
+tbody tr { transition: background-color 120ms ease; }
+tbody tr:hover td { background: var(--surface); }
+
+/* Room for the dropdown arrow inside the grid controls (overrides their older padding shorthand). */
+.controls select,
+.field select {
+  padding-right: 2.2rem;
 }
