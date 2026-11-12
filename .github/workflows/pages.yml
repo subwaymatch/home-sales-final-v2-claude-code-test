@@ -1,0 +1,42 @@
+# Publishes this repository's files to GitHub Pages each time you push to main.
+# Nothing is built: the site goes live exactly as the files are in the repository.
+# Using a framework that needs a build step, such as React? Ask your agent to add the build
+# steps before "Package the files" and to change its path to the build output folder, such as dist.
+# Before it can publish, turn on GitHub Pages: Settings, then Pages, then set Source to "GitHub Actions".
+
+name: Publish site to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # Adds a "Run workflow" button to the Actions tab, to publish without pushing a change
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Publish one push at a time, and let a publish that has started finish
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v6
+      - name: Set up GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Package the files
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: .
+      - name: Publish to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
