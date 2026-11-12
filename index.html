@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>College-town home sales: explore and ten questions</title>
+  <title>College-town home sales: findings, filters and ten questions</title>
   <link rel="icon" href="data:,">
   <script>
     // Set the theme before the page paints, so a dark-mode visitor does not see a flash of light mode.
@@ -25,6 +25,8 @@
   <script src="assets/app.js" defer></script>
 </head>
 <body>
+  <div class="loading" id="loading" role="status">Loading the home sales data. This takes a few seconds.</div>
+
   <header class="topbar">
     <div>
       <h1>College-town home sales</h1>
@@ -37,7 +39,17 @@
     <button type="button" class="switch" id="theme-toggle" aria-pressed="false">Dark mode</button>
   </header>
 
-  <nav class="toc" aria-label="Sections">
+  <section class="summary" id="summary" aria-labelledby="summary-title">
+    <h2 id="summary-title">Key findings</h2>
+    <ol class="findings">
+      <li id="finding-1">Loading…</li>
+      <li id="finding-2">Loading…</li>
+      <li id="finding-3">Loading…</li>
+    </ol>
+  </section>
+
+  <nav class="toc" aria-labelledby="toc-title">
+    <h2 id="toc-title">Contents</h2>
     <ol>
       <li><a href="#explore">Explore with filters and a map</a></li>
       <li><a href="#compare">Compare two areas</a></li>
@@ -178,7 +190,7 @@
       <p class="rule">Valid prices only. Full dataset; the filters above do not apply.</p>
       <div class="answer" id="a1" aria-live="polite">Loading the data…</div>
       <div class="chart-wrap" id="w1"><canvas id="c1" role="img" aria-label="Horizontal bar chart of the median sale price in each of the 18 cities, highest first."></canvas></div>
-      <details open><summary>All values in a table</summary><table id="t1" class="q-table"></table></details>
+      <details open><summary>All values in a table</summary><table id="t1" class="q-table stack-sm"></table></details>
     </section>
 
     <!-- Q2 -->
@@ -188,7 +200,7 @@
       <p class="rule">All rows, no price rule. The gap is (mean − median) ÷ median, as a percent of the median.</p>
       <div class="answer" id="a2" aria-live="polite">Loading the data…</div>
       <div class="chart-wrap" id="w2"><canvas id="c2" role="img" aria-label="Grouped horizontal bar chart of the mean and median sale price in each city, sorted by the size of the gap."></canvas></div>
-      <details open><summary>All values in a table</summary><table id="t2" class="q-table"></table></details>
+      <details open><summary>All values in a table</summary><table id="t2" class="q-table stack-sm"></table></details>
     </section>
 
     <!-- Q3 -->
@@ -198,7 +210,7 @@
       <p class="rule">Left: all rows. Right: valid prices only. Each line is one city.</p>
       <div class="answer" id="a3" aria-live="polite">Loading the data…</div>
       <div class="chart-wrap" id="w3"><canvas id="c3" role="img" aria-label="Slope chart of each city's rank by mean sale price, all rows on the left and valid prices on the right. Cities that change rank are orange."></canvas></div>
-      <details open><summary>All ranks in a table</summary><table id="t3" class="q-table"></table></details>
+      <details open><summary>All ranks in a table</summary><table id="t3" class="q-table stack-sm"></table></details>
     </section>
 
     <!-- Q4 -->
@@ -208,7 +220,7 @@
       <p class="rule">Valid prices only. Year comes from the sale date.</p>
       <div class="answer" id="a4" aria-live="polite">Loading the data…</div>
       <div class="chart-wrap" id="w4"><canvas id="c4" role="img" aria-label="Horizontal bar chart of the percent change in median sale price from 2024 to 2025 for each campus area."></canvas></div>
-      <details open><summary>All values in a table</summary><table id="t4" class="q-table"></table></details>
+      <details open><summary>All values in a table</summary><table id="t4" class="q-table stack-sm"></table></details>
     </section>
 
     <!-- Q5 -->
@@ -218,7 +230,7 @@
       <p class="rule">Valid prices only, and only rows with both a list date and a contract date. Days on market = contract date − list date.</p>
       <div class="answer" id="a5" aria-live="polite">Loading the data…</div>
       <div class="chart-wrap" id="w5"><canvas id="c5" role="img" aria-label="Horizontal bar chart of the median days on market for each campus area, fastest first."></canvas></div>
-      <details open><summary>All values in a table</summary><table id="t5" class="q-table"></table></details>
+      <details open><summary>All values in a table</summary><table id="t5" class="q-table stack-sm"></table></details>
     </section>
 
     <!-- Q6 -->
@@ -228,7 +240,7 @@
       <p class="rule">Valid prices, and rows where the annual tax is above $0 and below the sale price. For each sale, tax ÷ sale price × 100; the median of those percents is shown.</p>
       <div class="answer" id="a6" aria-live="polite">Loading the data…</div>
       <div class="chart-wrap" id="w6"><canvas id="c6" role="img" aria-label="Horizontal bar chart of the median annual property tax as a percent of sale price for each campus area, highest first."></canvas></div>
-      <details open><summary>All values in a table</summary><table id="t6" class="q-table"></table></details>
+      <details open><summary>All values in a table</summary><table id="t6" class="q-table stack-sm"></table></details>
     </section>
 
     <!-- Q7 -->
@@ -243,7 +255,7 @@
       </div>
       <div class="answer" id="a7" aria-live="polite">Loading the data…</div>
       <div class="chart-wrap" id="w7"><canvas id="c7" role="img" aria-label="Horizontal bar chart of each city's median sale price for the chosen bedroom count, lowest first."></canvas></div>
-      <details open><summary>All values in a table</summary><table id="t7" class="q-table"></table></details>
+      <details open><summary>All values in a table</summary><table id="t7" class="q-table stack-sm"></table></details>
     </section>
 
     <!-- Q8 -->
@@ -261,7 +273,7 @@
       </div>
       <div class="answer" id="a8" aria-live="polite">Loading the data…</div>
       <div class="chart-wrap" id="w8"><canvas id="c8" role="img" aria-label="Horizontal bar chart of each city's median days on market for the chosen price range, shortest first."></canvas></div>
-      <details open><summary>All values in a table</summary><table id="t8" class="q-table"></table></details>
+      <details open><summary>All values in a table</summary><table id="t8" class="q-table stack-sm"></table></details>
     </section>
 
     <!-- Q9 -->
@@ -279,7 +291,7 @@
       </div>
       <div class="answer" id="a9" aria-live="polite">Loading the data…</div>
       <div class="chart-wrap" id="w9"><canvas id="c9" role="img" aria-label="Line chart of the number of sales in each month of the chosen year and city. The busiest month is orange."></canvas></div>
-      <details open><summary>All values in a table</summary><table id="t9" class="q-table"></table></details>
+      <details open><summary>All values in a table</summary><table id="t9" class="q-table stack-sm"></table></details>
     </section>
 
     <!-- Q10 -->
