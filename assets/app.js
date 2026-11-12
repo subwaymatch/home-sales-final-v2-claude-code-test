@@ -15,7 +15,7 @@
   var FEATURE_FIELDS = { gar: 'garage', bas: 'basement', fire: 'fireplace' };
 
   // Colours are read from the CSS variables, so both themes work. They are set by readPalette().
-  var INK, GRID, QUIET, QUIET_DARK, QUIET_LIGHT, ACCENT, ACCENT_LIGHT, TEAL, TEAL_LIGHT;
+  var FONT_SANS, INK, GRID, QUIET, QUIET_DARK, QUIET_LIGHT, ACCENT, ACCENT_LIGHT, TEAL, TEAL_LIGHT;
 
   var charts = {};
   var labelFormats = {};
@@ -44,24 +44,31 @@
   function readPalette() {
     var cs = getComputedStyle(document.documentElement);
     function v(name) { return cs.getPropertyValue(name).trim(); }
+    FONT_SANS = v('--font-sans');
     INK = v('--ink');
     GRID = v('--grid');
     QUIET = v('--quiet');
-    QUIET_DARK = v('--quiet-dark');
-    QUIET_LIGHT = v('--quiet-light');
+    QUIET_DARK = v('--quiet-2');
+    QUIET_LIGHT = v('--quiet-3');
     ACCENT = v('--accent');
-    ACCENT_LIGHT = v('--accent-light');
-    TEAL = v('--teal');
-    TEAL_LIGHT = v('--teal-light');
+    ACCENT_LIGHT = v('--accent-soft');
+    TEAL = v('--accent-2');
+    TEAL_LIGHT = v('--accent-2-soft');
     if (window.Chart) {
       Chart.defaults.color = INK;
       Chart.defaults.borderColor = GRID;
-      Chart.defaults.font.family = 'system-ui, -apple-system, "Segoe UI", sans-serif';
+      Chart.defaults.font.family = FONT_SANS;
     }
   }
 
   function currentTheme() {
     return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  }
+
+  // Returns an rgba() string for a six-digit hex colour from the palette.
+  function alpha(hex, a) {
+    var n = parseInt(hex.slice(1), 16);
+    return 'rgba(' + ((n >> 16) & 255) + ', ' + ((n >> 8) & 255) + ', ' + (n & 255) + ', ' + a + ')';
   }
 
   function chartReady() { return typeof window.Chart !== 'undefined'; }
@@ -208,7 +215,7 @@
       var ctx = chart.ctx;
       var horizontal = chart.options.indexAxis === 'y';
       ctx.save();
-      ctx.font = '12px system-ui, -apple-system, "Segoe UI", sans-serif';
+      ctx.font = '12px ' + FONT_SANS;
       ctx.fillStyle = INK;
       chart.data.datasets.forEach(function (ds, di) {
         if (!chart.isDatasetVisible(di)) { return; }
@@ -239,7 +246,7 @@
     afterDatasetsDraw: function (chart) {
       var ctx = chart.ctx;
       ctx.save();
-      ctx.font = '12px system-ui, -apple-system, "Segoe UI", sans-serif';
+      ctx.font = '12px ' + FONT_SANS;
       ctx.textBaseline = 'middle';
       chart.data.datasets.forEach(function (ds, di) {
         var pts = chart.getDatasetMeta(di).data;
@@ -276,7 +283,7 @@
       ctx.stroke();
       ctx.setLineDash([]);
       ctx.fillStyle = ACCENT;
-      ctx.font = '12px system-ui, -apple-system, "Segoe UI", sans-serif';
+      ctx.font = '12px ' + FONT_SANS;
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
       ctx.fillText(opts.label, px + 6, ys.top + 4);
@@ -899,7 +906,7 @@
       data: {
         labels: [A.name, B.name],
         datasets: [{ label: 'Median sale price', data: [A.price, B.price],
-                     backgroundColor: [ACCENT, TEAL], borderRadius: 4 }]
+                     backgroundColor: [QUIET_DARK, TEAL], borderRadius: 4 }]
       },
       options: {
         indexAxis: 'y',
@@ -1657,8 +1664,8 @@
         datasets: [{
           label: 'Sales that meet the conditions',
           data: points,
-          backgroundColor: 'rgba(123, 137, 150, 0.35)',
-          borderColor: 'rgba(123, 137, 150, 0.6)',
+          backgroundColor: alpha(QUIET_DARK, 0.4),
+          borderColor: alpha(QUIET_DARK, 0.7),
           pointRadius: 2.5
         }]
       },
