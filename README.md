@@ -13,8 +13,12 @@ The site is published with GitHub Pages from the `main` branch. If the address d
 - **Key findings and contents** at the top of the page.
 - **Explore:** filters for area, year, bedrooms, price, living area and home features, with key numbers, a map of the cities, two charts, a results table and a comparison of two areas.
 - **Q1 to Q10:** ten questions about the data, each with a written answer, a chart and a table. Q7 to Q10 have their own controls.
-- **Insights:** P1 shows how the valid price rule changes the results. P2 is coming soon.
+- **Insights:** P1 shows how the valid price rule changes the results. P2 describes working with a coding agent.
 - **Data and methods:** the rules used, how missing values are handled, and the citation.
+
+## How this site was built
+
+This site was built with Claude Code on the web over seven rounds of prompts and pull requests. Each round was one prompt and one pull request, which was read and merged before the next prompt was sent. P2 on the site describes the experience.
 
 ## Repository layout
 
