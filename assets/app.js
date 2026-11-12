@@ -162,7 +162,7 @@
       return '<th scope="col"' + (optionalCols && optionalCols[i] ? ' class="optional"' : '') + '>' + esc(h) + '</th>';
     }).join('') + '</tr></thead><tbody>' + rows.map(function (r) {
       return '<tr>' + r.map(function (c, i) {
-        return '<td' + (optionalCols && optionalCols[i] ? ' class="optional"' : '') + '>' + esc(c) + '</td>';
+        return '<td data-label="' + esc(headers[i]) + '"' + (optionalCols && optionalCols[i] ? ' class="optional"' : '') + '>' + esc(c) + '</td>';
       }).join('') + '</tr>';
     }).join('') + '</tbody>';
     el(id).innerHTML = html;
@@ -919,6 +919,115 @@
     });
   }
 
+  /* ---------- Insights P1: the valid price rule ---------- */
+
+  function renderP1() {
+    var all = D.filter(function (r) { return r.price !== null; });
+    var valid = all.filter(function (r) { return r.valid; });
+    var below = all.filter(function (r) { return r.price < PRICE_MIN; });
+    var above = all.filter(function (r) { return r.price > PRICE_MAX; });
+    var removed = all.length - valid.length;
+    var allG = groupBy(all, function (r) { return r.city; });
+    var validG = groupBy(valid, function (r) { return r.city; });
+    var cities = Array.from(allG.keys()).sort(byName);
+    var meanB = {};
+    var meanA = {};
+    cities.forEach(function (c) {
+      meanB[c] = mean(allG.get(c).map(function (r) { return r.price; }));
+      meanA[c] = mean(validG.get(c).map(function (r) { return r.price; }));
+    });
+    function rankOf(city, means) {
+      var higher = 0;
+      cities.forEach(function (other) { if (means[other] > means[city]) { higher += 1; } });
+      return higher + 1;
+    }
+    var rows = cities.map(function (c) {
+      var pb = allG.get(c).map(function (r) { return r.price; });
+      var pa = (validG.get(c) || []).map(function (r) { return r.price; });
+      var medB = median(pb);
+      var medA = median(pa);
+      return {
+        name: c, removed: pb.length - pa.length,
+        mb: meanB[c], ma: meanA[c], medB: medB, medA: medA,
+        rb: rankOf(c, meanB), ra: rankOf(c, meanA),
+        mchg: (meanA[c] - meanB[c]) / meanB[c] * 100,
+        medchg: (medA - medB) / medB * 100
+      };
+    });
+    rows.sort(function (a, b) { return a.rb - b.rb; });
+
+    var allPrices = all.map(function (r) { return r.price; });
+    var validPrices = valid.map(function (r) { return r.price; });
+    var wholeMeanB = mean(allPrices);
+    var wholeMeanA = mean(validPrices);
+    var wholeMedB = median(allPrices);
+    var wholeMedA = median(validPrices);
+    var wholeMeanChg = (wholeMeanA - wholeMeanB) / wholeMeanB * 100;
+    var maxRow = all.reduce(function (a, b) { return b.price > a.price ? b : a; });
+    var minRow = all.reduce(function (a, b) { return b.price < a.price ? b : a; });
+    var changed = rows.filter(function (r) { return r.rb !== r.ra; });
+    var bigMean = extremes(rows.map(function (r) { return { name: r.name, value: Math.abs(r.mchg), row: r }; }), true, 1)[0].row;
+    var bigMed = extremes(rows.map(function (r) { return { name: r.name, value: Math.abs(r.medchg), row: r }; }), true, 1)[0].row;
+    var maxMedAbs = Math.abs(bigMed.medchg);
+
+    var medSame = roundHalfUp(wholeMedA, 0) === roundHalfUp(wholeMedB, 0);
+    var p = [];
+    p.push('The data description sheet lists impossible prices: ' + plural(below.length, 'sale') + ' under $10,000, including one at ' +
+      fmtUsd(minRow.price) + ', and ' + fmtInt(above.length) + ' over $5,000,000, up to ' + fmtUsd(maxRow.price) +
+      '. The valid price rule keeps sales from $10,000 to $5,000,000, inclusive, and removes the other <strong>' +
+      fmtInt(removed) + '</strong> rows. The rule is applied everywhere except Q2, Q3 and Q9, which use all rows as their questions state. No row is deleted from the dataset; the rule only changes which sales are counted.');
+    p.push('<strong>Means moved; medians barely did.</strong> Across the whole dataset the mean falls from ' + fmtUsd(wholeMeanB) +
+      ' to ' + fmtUsd(wholeMeanA) + ', a change of ' + fmtPct(wholeMeanChg, false) + '. The median ' +
+      (medSame ? 'stays at ' + fmtUsd(wholeMedB) + '.' : 'moves from ' + fmtUsd(wholeMedB) + ' to ' + fmtUsd(wholeMedA) + '.') +
+      ' Per city, no median moves by more than ' + fmtPct(maxMedAbs, false) + '. ' + esc(bigMean.name) + '\'s mean moves the most, ' +
+      fmtPct(bigMean.mchg, true) + ', from ' + fmtUsd(bigMean.mb) + ' to ' + fmtUsd(bigMean.ma) + '.' +
+      (maxRow.city === bigMean.name ? ' Its ' + fmtInt(bigMean.removed) + ' removed sales include the highest price in the dataset, ' + fmtUsd(maxRow.price) + '.' : ''));
+    if (changed.length) {
+      p.push(changed.length === 1 ? 'One city changes rank by mean: ' : changed.length + ' cities change rank by mean: ' +
+        changed.map(function (r) { return esc(r.name) + ' (' + ordinal(r.rb) + ' to ' + ordinal(r.ra) + ')'; }).join(', ') + '.');
+    } else {
+      p.push('No city changes rank by mean.');
+    }
+    p.push('<strong>What the rule cannot fix.</strong> It only removes prices outside a fixed range. A wrong price inside the range, such as a $600,000 entry that should read $60,000, stays in the data and still affects the results. The rule also leaves the other problems in the sheet alone: blank dates, addresses shared by several units, and an unreliable home type. A mean responds to any single sale, which is why the results on this page use medians except where a question asks for a mean.');
+    setAnswer('ap1-text', p);
+
+    var headers = ['City', 'Sales removed', 'Mean, before', 'Mean, after', 'Median, before', 'Median, after', 'Rank by mean, before', 'Rank by mean, after'];
+    var tableRows = [['All cities', fmtInt(removed), fmtUsd(wholeMeanB), fmtUsd(wholeMeanA), fmtUsd(wholeMedB), fmtUsd(wholeMedA), '—', '—']];
+    rows.forEach(function (r) {
+      tableRows.push([r.name, fmtInt(r.removed), fmtUsd(r.mb), fmtUsd(r.ma), fmtUsd(r.medB), fmtUsd(r.medA), String(r.rb), String(r.ra)]);
+    });
+    fillTable('tp1', headers, tableRows);
+
+    var names = rows.map(function (r) { return r.name; });
+    sizeWrap('wp1', rows.length);
+    drawChart('cp1', {
+      type: 'bar',
+      data: {
+        labels: names,
+        datasets: [
+          { label: 'Mean, all rows (before)', data: rows.map(function (r) { return r.mb; }), backgroundColor: QUIET_DARK },
+          { label: 'Mean, valid prices (after)', data: rows.map(function (r) { return r.ma; }), backgroundColor: TEAL }
+        ]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom' },
+          tooltip: { callbacks: {
+            label: function (ctx) { return ctx.dataset.label + ': ' + fmtUsd(ctx.parsed.x); },
+            footer: function (items) {
+              var r = rows[items[0].dataIndex];
+              return plural(r.removed, 'sale') + ' removed; rank ' + r.rb + ' to ' + r.ra;
+            }
+          } }
+        },
+        scales: { x: { beginAtZero: true, ticks: { callback: function (v) { return '$' + fmtInt(v / 1000) + 'k'; } } } }
+      }
+    });
+  }
+
   /* ---------- Q1 to Q6 (always the full dataset) ---------- */
 
   function renderQ1() {
@@ -1577,6 +1686,7 @@
 
   function renderAll() {
     renderExplore();
+    renderP1();
     renderCompare();
     renderQ1();
     renderQ2();
@@ -1672,7 +1782,7 @@
   }
 
   function fail(message) {
-    ['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8', 'a9', 'a10', 'a-compare', 'explore-summary'].forEach(function (id) {
+    ['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8', 'a9', 'a10', 'a-compare', 'explore-summary', 'ap1-text'].forEach(function (id) {
       setError(id, message);
     });
   }

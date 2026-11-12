@@ -48,6 +48,7 @@
       <li><a href="#q8">Q8. Shortest days on market by price range</a></li>
       <li><a href="#q9">Q9. Monthly sales by city and year</a></li>
       <li><a href="#q10">Q10. Distance to campus by budget</a></li>
+      <li><a href="#insights">Insights</a></li>
       <li><a href="#methods">Data and methods</a></li>
     </ol>
   </nav>
@@ -296,6 +297,25 @@
       </div>
       <div class="answer" id="a10" aria-live="polite">Loading the data…</div>
       <div class="chart-wrap" id="w10"><canvas id="c10" role="img" aria-label="Scatter plot of each matching sale: distance to campus against sale price. A dashed line marks the median distance."></canvas></div>
+    </section>
+
+    <!-- INSIGHTS -->
+    <section class="section" id="insights" aria-labelledby="insights-title">
+      <h2 id="insights-title">Insights</h2>
+      <p class="prompt">Short findings from the data. Each one states its method and the numbers behind it.</p>
+
+      <div class="question" id="p1" aria-labelledby="p1-title">
+        <h3 id="p1-title">P1. Data quality: how the valid price rule changes the results</h3>
+        <p class="rule">Problem 3 in the data description sheet: some prices are impossible. The rule is sale price from $10,000 to $5,000,000, inclusive. The "before" figures use all rows; the "after" figures use valid prices only. The same numbers are checked by <a href="scripts/check_p1_price_rule.py">scripts/check_p1_price_rule.py</a>.</p>
+        <div class="answer" id="ap1-text" aria-live="polite">Loading the data…</div>
+        <div class="chart-wrap" id="wp1"><canvas id="cp1" role="img" aria-label="Horizontal grouped bar chart of each city's mean sale price before and after the valid price rule, in rank order."></canvas></div>
+        <details open><summary>Before and after in a table</summary><table id="tp1" class="q-table stack-sm"></table></details>
+      </div>
+
+      <div class="question" id="p2" aria-labelledby="p2-title">
+        <h3 id="p2-title">P2</h3>
+        <p>Coming soon</p>
+      </div>
     </section>
 
     <!-- METHODS -->
