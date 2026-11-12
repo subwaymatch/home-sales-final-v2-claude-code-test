@@ -328,8 +328,11 @@
       </div>
 
       <div class="question" id="p2" aria-labelledby="p2-title">
-        <h3 id="p2-title">P2</h3>
-        <p>Coming soon</p>
+        <h3 id="p2-title">P2. Working with a coding agent</h3>
+        <p>I built this site with Claude Code on the web using the Haiku 5.5 model, in seven rounds. Each round was one prompt and one pull request that I read and merged before sending the next prompt. I did not write any code myself.</p>
+        <p>The biggest difference from pandas or SQL in a Jupyter notebook is where my attention went. In a notebook I would spend most of my time on syntax: groupby, merges, date parsing, and chart settings. With the agent I spent that time deciding the rules (which rows count as valid, how to treat blank days on market, what "within a distance" means) and then checking the results. The agent wrote checking scripts when I asked, but I still compared a few answers against my own numbers before merging, because a wrong filter would look just as polished as a right one.</p>
+        <p>The agent was much faster at the parts I would never have time for in a notebook: a map, a light and dark theme, shareable links, and a layout that works on a phone. It was weaker at things it could not see. It could not load Google Fonts in its sandbox, so I had to check the fonts on the live site myself.</p>
+        <p>I prefer the agent for building something people will use, and a notebook for exploring the data the first time. If I did this again I would do a quick notebook pass first so I know the answers before asking the agent to build the page.</p>
       </div>
     </section>
 
