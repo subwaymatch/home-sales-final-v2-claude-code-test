@@ -15,7 +15,7 @@
   var FEATURE_FIELDS = { gar: 'garage', bas: 'basement', fire: 'fireplace' };
 
   // Colours are read from the CSS variables, so both themes work. They are set by readPalette().
-  var FONT_SANS, INK, GRID, QUIET, QUIET_DARK, QUIET_LIGHT, ACCENT, ACCENT_LIGHT, TEAL, TEAL_LIGHT;
+  var FONT_SANS, INK, INK_2, PAPER, RULE, GRID, QUIET, QUIET_DARK, QUIET_LIGHT, ACCENT, ACCENT_LIGHT, TEAL, TEAL_LIGHT;
 
   var charts = {};
   var labelFormats = {};
@@ -46,6 +46,9 @@
     function v(name) { return cs.getPropertyValue(name).trim(); }
     FONT_SANS = v('--font-sans');
     INK = v('--ink');
+    INK_2 = v('--ink-2');
+    PAPER = v('--paper');
+    RULE = v('--rule');
     GRID = v('--grid');
     QUIET = v('--quiet');
     QUIET_DARK = v('--quiet-2');
@@ -58,6 +61,19 @@
       Chart.defaults.color = INK;
       Chart.defaults.borderColor = GRID;
       Chart.defaults.font.family = FONT_SANS;
+      var tip = Chart.defaults.plugins.tooltip;
+      tip.backgroundColor = PAPER;
+      tip.titleColor = INK;
+      tip.bodyColor = INK_2;
+      tip.footerColor = INK_2;
+      tip.borderColor = RULE;
+      tip.borderWidth = 1;
+      tip.cornerRadius = 6;
+      tip.padding = 10;
+      tip.boxPadding = 4;
+      tip.titleFont = { family: FONT_SANS, size: 13, weight: '600' };
+      tip.bodyFont = { family: FONT_SANS, size: 13 };
+      tip.footerFont = { family: FONT_SANS, size: 12 };
     }
   }
 
@@ -183,8 +199,45 @@
     el(id).innerHTML = '<p class="error">' + esc(message) + '</p>';
   }
 
+  // Chart titles and axis labels. x is the horizontal axis and y the vertical one, whichever way the chart runs.
+  var CHART_META = {
+    c1: { title: 'Median sale price by city, valid prices', x: 'Median sale price', y: 'City' },
+    c2: { title: 'Mean and median sale price by city, all rows', x: 'Sale price', y: 'City' },
+    c3: { title: 'Rank by mean sale price: all rows and valid prices', x: 'Price rule', y: 'Rank by mean (1 is highest)' },
+    c4: { title: 'Change in median sale price, 2024 to 2025, by campus area', x: 'Percent change', y: 'Campus area' },
+    c5: { title: 'Median days on market by campus area', x: 'Days from listing to contract', y: 'Campus area' },
+    c6: { title: 'Median annual tax as a percent of sale price, by campus area', x: 'Percent of sale price', y: 'Campus area' },
+    c7: { title: 'Median sale price by city for the chosen bedroom count', x: 'Median sale price', y: 'City' },
+    c8: { title: 'Median days on market by city for the chosen price range', x: 'Days from listing to contract', y: 'City' },
+    c9: { title: 'Sales by month for the chosen city and year', x: 'Month', y: 'Sales' },
+    c10: { title: 'Sales that meet the conditions: distance to campus and price', x: 'Miles to campus', y: 'Sale price' },
+    'cx-year': { title: 'Sales per sale year under the current filters', x: 'Sale year', y: 'Sales' },
+    'cx-beds': { title: 'Median sale price by bedrooms under the current filters', x: 'Bedrooms', y: 'Median sale price' },
+    'c-compare': { title: 'Median sale price: Area A and Area B', x: 'Median sale price', y: 'Area' },
+    cp1: { title: 'Mean sale price by city, before and after the valid price rule', x: 'Mean sale price', y: 'City' }
+  };
+
+  function chartTitleOpts(text) {
+    return { display: true, text: text, align: 'start', color: INK, padding: { bottom: 14 },
+             font: { family: FONT_SANS, size: 15, weight: '600' } };
+  }
+
+  function axisTitleOpts(text) {
+    return { display: true, text: text, color: INK_2, padding: { top: 6, bottom: 2 },
+             font: { family: FONT_SANS, size: 12, weight: '600' } };
+  }
+
   function drawChart(id, config) {
     if (charts[id]) { charts[id].destroy(); }
+    var meta = CHART_META[id];
+    if (meta) {
+      var o = config.options = config.options || {};
+      o.plugins = o.plugins || {};
+      o.plugins.title = chartTitleOpts(meta.title);
+      o.scales = o.scales || {};
+      o.scales.x = Object.assign({}, o.scales.x || {}, { title: axisTitleOpts(meta.x) });
+      o.scales.y = Object.assign({}, o.scales.y || {}, { title: axisTitleOpts(meta.y) });
+    }
     var plugins = config.plugins || [];
     if (labelFormats[id]) { plugins = plugins.concat([valueLabelsPlugin]); }
     config.plugins = plugins;
@@ -603,7 +656,7 @@
             return bMed[i] === null ? 'No sales' : fmtUsd(bMed[i]) + ' from ' + plural(bN[i], 'sale');
           } } }
         },
-        scales: { y: { beginAtZero: true, ticks: { callback: function (v) { return '$' + fmtInt(v / 1000) + 'k'; } } } }
+        scales: { y: { beginAtZero: true, ticks: { maxTicksLimit: 6, callback: function (v) { return fmtUsd(v); } } } }
       }
     });
   }
@@ -638,6 +691,13 @@
     { key: 'dom', label: 'Median days on market' }
   ];
 
+  // Two triangles: the active one is dark, the other is faint. "asc" shows the up one, "desc" the down one.
+  function sortIcon(dir) {
+    var state = dir === 'asc' ? 'asc' : dir === 'desc' ? 'desc' : 'none';
+    return '<svg class="sort-icon ' + state + '" viewBox="0 0 12 14" width="12" height="14" aria-hidden="true" focusable="false">' +
+      '<path class="up" d="M6 1 L11 6 H1 Z"/><path class="down" d="M6 13 L11 8 H1 Z"/></svg>';
+  }
+
   function drawResultsTable() {
     var dir = resultSort.dir === 'asc' ? 1 : -1;
     var sorted = resultRows.slice().sort(function (a, b) {
@@ -650,10 +710,11 @@
       return dir * (x - y) || byName(a.city, b.city);
     });
     var head = '<thead><tr>' + RESULT_COLUMNS.map(function (c) {
-      var aria = c.key === resultSort.key ? (resultSort.dir === 'asc' ? 'ascending' : 'descending') : 'none';
+      var active = c.key === resultSort.key;
+      var aria = active ? (resultSort.dir === 'asc' ? 'ascending' : 'descending') : 'none';
       var hcls = [c.optional ? 'optional' : '', c.text ? 'txt' : ''].join(' ').trim();
       return '<th scope="col"' + (hcls ? ' class="' + hcls + '"' : '') + ' aria-sort="' + aria + '">' +
-        '<button type="button" data-sort="' + c.key + '">' + esc(c.label) + '</button></th>';
+        '<button type="button" data-sort="' + c.key + '">' + esc(c.label) + sortIcon(active ? resultSort.dir : null) + '</button></th>';
     }).join('') + '</tr></thead>';
     var body;
     if (!sorted.length) {
@@ -921,7 +982,7 @@
             return fmtUsd(s.price) + ' from ' + plural(s.n, 'sale');
           } } }
         },
-        scales: { x: { beginAtZero: true, ticks: { callback: function (v) { return '$' + fmtInt(v / 1000) + 'k'; } } } }
+        scales: { x: { beginAtZero: true, ticks: { maxTicksLimit: 6, callback: function (v) { return fmtUsd(v); } } } }
       }
     });
   }
@@ -1030,7 +1091,7 @@
             }
           } }
         },
-        scales: { x: { beginAtZero: true, ticks: { callback: function (v) { return '$' + fmtInt(v / 1000) + 'k'; } } } }
+        scales: { x: { beginAtZero: true, ticks: { maxTicksLimit: 6, callback: function (v) { return fmtUsd(v); } } } }
       }
     });
   }
@@ -1085,7 +1146,7 @@
             return fmtUsd(r.value) + ' from ' + plural(r.n, 'valid sale');
           } } }
         },
-        scales: { x: { ticks: { callback: function (v) { return '$' + fmtInt(v / 1000) + 'k'; } } } }
+        scales: { x: { ticks: { maxTicksLimit: 6, callback: function (v) { return fmtUsd(v); } } } }
       }
     });
   }
@@ -1145,7 +1206,7 @@
             }
           }
         },
-        scales: { x: { ticks: { callback: function (v) { return '$' + fmtInt(v / 1000) + 'k'; } } } }
+        scales: { x: { ticks: { maxTicksLimit: 6, callback: function (v) { return fmtUsd(v); } } } }
       }
     });
   }
@@ -1295,7 +1356,7 @@
             return fmtUsd(r.m24) + ' (2024) to ' + fmtUsd(r.m25) + ' (2025)';
           } } }
         },
-        scales: { x: { ticks: { callback: function (v) { return v + '%'; } } } }
+        scales: { x: { ticks: { callback: function (v) { return fmtDec(v, 1) + '%'; } } } }
       }
     });
   }
@@ -1395,7 +1456,7 @@
             return 'Sales used: ' + fmtInt(rows[ctx.dataIndex].n);
           } } }
         },
-        scales: { x: { beginAtZero: true, ticks: { callback: function (v) { return v + '%'; } } } }
+        scales: { x: { beginAtZero: true, ticks: { callback: function (v) { return fmtDec(v, 1) + '%'; } } } }
       }
     });
   }
@@ -1461,7 +1522,7 @@
             return fmtUsd(r.value) + ' from ' + plural(r.n, 'valid sale');
           } } }
         },
-        scales: { x: { ticks: { callback: function (v) { return '$' + fmtInt(v / 1000) + 'k'; } } } }
+        scales: { x: { ticks: { maxTicksLimit: 6, callback: function (v) { return fmtUsd(v); } } } }
       }
     });
   }
@@ -1682,7 +1743,7 @@
         },
         scales: {
           x: { title: { display: true, text: 'Miles to campus' }, min: 0, ticks: { callback: function (v) { return fmtDec(v, 0); } } },
-          y: { title: { display: true, text: 'Sale price' }, min: 0, ticks: { callback: function (v) { return '$' + fmtInt(v / 1000) + 'k'; } } }
+          y: { title: { display: true, text: 'Sale price' }, min: 0, ticks: { maxTicksLimit: 6, callback: function (v) { return fmtUsd(v); } } }
         }
       },
       plugins: [medianLinePlugin]
@@ -1770,7 +1831,7 @@
       return { value: String(y), label: yearLabel(y) };
     }));
     fillSelect('f-year', yearOptions, 'any');
-    fillGroupedSelect('f-area', [{ label: 'Whole dataset', options: [{ value: '', label: 'All campus areas and cities' }] }].concat(locationGroups()), '');
+    fillGroupedSelect('f-area', [{ label: 'Whole dataset', options: [{ value: '', label: 'All areas' }] }].concat(locationGroups()), '');
     fillGroupedSelect('cmp-a', locationGroups(), 'campus:University of Michigan');
     fillGroupedSelect('cmp-b', locationGroups(), 'city:Champaign, IL');
 
