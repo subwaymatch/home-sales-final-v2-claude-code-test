@@ -577,7 +577,7 @@
     var rows = D.filter(function (r) { return passes(r, f, true); });
     var prices = rows.map(function (r) { return r.price; });
     var med = median(prices);
-    el('key-median').textContent = dash(med, fmtUsd);
+    el('key-median').textContent = med === null ? 'No sales' : fmtUsd(med);
     el('key-count').textContent = fmtInt(rows.length);
 
     var described = describeFilters(f);
@@ -729,11 +729,12 @@
           else if (c.key === 'area') { cell = dash(r.area, fmtSqft); }
           else { cell = dash(r.dom, fmtDays); }
           var cls = [c.optional ? 'optional' : '', c.text ? 'txt' : ''].join(' ').trim();
-          return '<td' + (cls ? ' class="' + cls + '"' : '') + '>' + esc(cell) + '</td>';
+          return '<td data-label="' + esc(c.label) + '"' + (cls ? ' class="' + cls + '"' : '') + '>' + esc(cell) + '</td>';
         }).join('') + '</tr>';
       }).join('') + '</tbody>';
     }
     el('t-results').innerHTML = head + body;
+    el('t-results').classList.add('stack-sm');
   }
 
   /* ---------- Explore: map ---------- */
@@ -1752,7 +1753,51 @@
 
   /* ---------- Start-up, events and themes ---------- */
 
+  /* ---------- Key findings (top of the page) ---------- */
+
+  function renderFindings() {
+    var valid = D.filter(function (r) { return r.valid; });
+
+    var cityRows = [];
+    groupBy(valid, function (r) { return r.city; }).forEach(function (rs, city) {
+      cityRows.push({ name: city, value: median(rs.map(function (r) { return r.price; })), n: rs.length });
+    });
+    var top = extremes(cityRows, true, 0);
+    var low = extremes(cityRows, false, 0);
+    var topNames = top.map(function (r) { return r.name; });
+    var lowNames = low.map(function (r) { return r.name; });
+    el('finding-1').innerHTML = '<strong>' + esc(joinNames(topNames)) + '</strong> ' +
+      (top.length > 1 ? 'tie for' : 'has') + ' the highest median sale price, at ' + fmtUsd(top[0].value) +
+      (top.length === 1 ? ' from ' + plural(top[0].n, 'valid sale') : '') + '. ' +
+      esc(joinNames(lowNames)) + (low.length > 1 ? ' tie for' : ' has') + ' the lowest, at ' + fmtUsd(low[0].value) + '.';
+
+    var dayRows = [];
+    groupBy(valid.filter(function (r) { return r.listMs !== null && r.contractMs !== null; }),
+      function (r) { return r.uni; }).forEach(function (rs, uni) {
+      dayRows.push({ name: uni, value: median(rs.map(function (r) { return (r.contractMs - r.listMs) / DAY_MS; })) });
+    });
+    var slow = extremes(dayRows, true, 1);
+    var fast = extremes(dayRows, false, 1);
+    el('finding-2').innerHTML = 'Homes sell fastest in ' + esc(joinNames(fast.map(function (r) { return r.name; }))) +
+      ', with a median of ' + fmtDays(fast[0].value) + ' from listing to contract, and slowest in ' +
+      esc(joinNames(slow.map(function (r) { return r.name; }))) + ', at ' + fmtDays(slow[0].value) + '.';
+
+    var all = D.filter(function (r) { return r.price !== null; });
+    var removed = all.length - valid.length;
+    var meanB = mean(all.map(function (r) { return r.price; }));
+    var meanA = mean(valid.map(function (r) { return r.price; }));
+    var medB = median(all.map(function (r) { return r.price; }));
+    var medA = median(valid.map(function (r) { return r.price; }));
+    var meanChg = (meanA - meanB) / meanB * 100;
+    el('finding-3').innerHTML = 'The valid price rule removes ' + fmtInt(removed) + ' of ' + fmtInt(all.length) +
+      ' sales (' + fmtPct(removed / all.length * 100, false) + '). Across the whole dataset the mean ' +
+      (meanChg < 0 ? 'falls' : 'rises') + ' ' + fmtPct(Math.abs(meanChg), false) + ', but the median ' +
+      (roundHalfUp(medA, 0) === roundHalfUp(medB, 0) ? 'stays at ' + fmtUsd(medB) : 'moves from ' + fmtUsd(medB) + ' to ' + fmtUsd(medA)) +
+      '. The rule changes the averages much more than the typical sale.';
+  }
+
   function renderAll() {
+    renderFindings();
     renderExplore();
     renderP1();
     renderCompare();
@@ -1850,6 +1895,11 @@
   }
 
   function fail(message) {
+    var banner = el('loading');
+    if (banner) {
+      banner.textContent = message;
+      banner.classList.add('error');
+    }
     ['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8', 'a9', 'a10', 'a-compare', 'explore-summary', 'ap1-text'].forEach(function (id) {
       setError(id, message);
     });
@@ -1868,6 +1918,8 @@
 
     loadData().then(function (rows) {
       D = rows;
+      var banner = el('loading');
+      if (banner) { banner.remove(); }
       setUpLists();
       showStats();
       setUpControls();

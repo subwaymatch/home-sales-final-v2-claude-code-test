@@ -5,6 +5,20 @@
 :root {
   color-scheme: light;
 
+  /* Spacing scale: every margin and gap uses one of these steps */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* Layout */
+  --content-width: 72rem;
+  --prose-width: 68ch;
+
   /* Typography (Google Fonts, both open source under the SIL Open Font License) */
   --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
   --font-sans: "Source Sans 3", "Segoe UI", system-ui, -apple-system, sans-serif;
@@ -560,4 +574,118 @@ tbody tr:hover td { background: var(--surface); }
 .controls select,
 .field select {
   padding-right: 2.2rem;
+}
+
+
+/* ---------- Layout and spacing ---------- */
+
+body {
+  max-width: var(--content-width);
+  padding: var(--space-12) var(--space-6) var(--space-16);
+}
+
+h1 { margin-bottom: var(--space-3); }
+h2 { margin-bottom: var(--space-4); }
+h3 { margin: var(--space-8) 0 var(--space-3); }
+
+.lede,
+.prompt,
+.rule,
+.answer,
+.summary,
+.panel p,
+.panel li {
+  max-width: var(--prose-width);
+}
+
+.lede { margin-bottom: var(--space-8); }
+.prompt { margin: 0 0 var(--space-3); }
+.rule { margin: 0 0 var(--space-4); }
+.answer { margin: var(--space-4) 0 var(--space-6); }
+.controls { margin: var(--space-3) 0 var(--space-4); }
+.keynums { margin: var(--space-4) 0 var(--space-6); }
+.map { margin: var(--space-3) 0 var(--space-2); }
+.map-note { margin: 0 0 var(--space-3); }
+.chart-wrap { margin: var(--space-3) 0 var(--space-6); }
+details { margin: var(--space-3) 0 var(--space-6); }
+table { margin-top: var(--space-3); }
+.panel { margin: var(--space-6) 0; padding: var(--space-6); }
+
+/* Each section starts on a clear rule with generous space above it */
+.section,
+.question {
+  margin-top: var(--space-16);
+  padding-top: var(--space-12);
+  border-top: 1px solid var(--rule);
+}
+.section:first-of-type { margin-top: var(--space-8); }
+
+.two-col { gap: var(--space-8); }
+
+.topbar { margin-bottom: var(--space-8); }
+
+/* Findings summary */
+.summary {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: var(--space-6) var(--space-8);
+  margin: 0 0 var(--space-12);
+  max-width: none;
+}
+.summary h2 {
+  font-size: 1.4rem;
+  border-bottom: 0;
+  padding-bottom: 0;
+  margin-bottom: var(--space-3);
+}
+.findings {
+  margin: 0;
+  padding-left: 1.4rem;
+}
+.findings li { margin: var(--space-3) 0; }
+
+/* Contents */
+nav.toc {
+  margin: 0 0 var(--space-8);
+}
+nav.toc h2 {
+  font-size: 1.1rem;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  color: var(--ink);
+  border-bottom: 0;
+  padding-bottom: 0;
+  margin-bottom: var(--space-3);
+}
+nav.toc ol { gap: var(--space-2) var(--space-6); }
+
+/* Loading message, shown until the data is ready */
+.loading {
+  margin: 0 0 var(--space-8);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--accent-2);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 600;
+}
+.loading.error {
+  border-left-color: var(--error);
+  color: var(--error);
+}
+
+/* Phones: narrower gutters and tighter section spacing */
+@media (max-width: 600px) {
+  body { padding: var(--space-8) var(--space-4) var(--space-12); }
+  .section,
+  .question {
+    margin-top: var(--space-12);
+    padding-top: var(--space-8);
+  }
+  .section:first-of-type { margin-top: var(--space-6); }
+  .summary { padding: var(--space-4) var(--space-4); }
+  .panel { padding: var(--space-4); }
+  .chart-wrap { margin-bottom: var(--space-4); }
 }
