@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Computes the numbers for the Insights section, P1 "Data quality".
 
-It compares every sale with the valid price rule (sale_price from 10,000 to 5,000,000, inclusive)
+It compares every sale with the price range (sale_price from 10,000 to 5,000,000, inclusive)
 against all rows, for each city and for the whole dataset. The page computes the same numbers in
 the browser (assets/app.js). Run it from the repository root:
 

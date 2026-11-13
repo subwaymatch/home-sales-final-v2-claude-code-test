@@ -13,7 +13,7 @@ The site is published with GitHub Pages from the `main` branch. If the address d
 - **Key findings and contents** at the top of the page.
 - **Explore:** filters for area, year, bedrooms, price, living area and home features, with key numbers, a map of the cities, two charts, a results table and a comparison of two areas.
 - **Q1 to Q10:** ten questions about the data, each with a written answer, a chart and a table. Q7 to Q10 have their own controls.
-- **Insights:** P1 shows how the valid price rule changes the results. P2 describes working with a coding agent.
+- **Insights:** P1 shows how the price range changes the results. P2 describes working with a coding agent.
 - **Data and methods:** the rules used, how missing values are handled, and the citation.
 
 ## How this site was built
@@ -46,11 +46,12 @@ python3 scripts/check_q1_q6.py
 python3 scripts/check_p1_price_rule.py
 ```
 
-The first prints the Q1 to Q6 answers. The second prints the before-and-after figures for the valid price rule in P1.
+The first prints the Q1 to Q6 answers. The second prints the before-and-after figures for the price range in P1.
 
 ## Data notes
 
-- **Valid price:** a sale price from $10,000 to $5,000,000, inclusive. Every figure uses it except Q2, Q3 and Q9, which use all rows as their questions state. The rule removes 71 sales, and no row is deleted from the dataset.
+- **Price range:** a sale price from $10,000 to $5,000,000, inclusive. The range is a scope rule: it removes clear errors, such as a $0 sale, along with a small number of very high sales, some of which are real luxury homes. Every figure uses it except Q2 and Q9, which use all rows, and Q3, which compares all rows with the range. The range leaves out 71 sales, and no row is deleted from the dataset.
+- **Q6:** for each campus area, the total annual tax divided by the total sale price, as a percent. It uses sales in the price range with an annual tax above $0 and below 10% of the sale price.
 - **Days on market:** contract date minus list date, in days, for rows with both dates. A blank date is not counted as zero.
 - **Blank values:** home features (garage, basement, fireplace) that are blank are treated as unknown, not as "no". A blank living area is unknown. A blank sale date leaves a sale out of year-based results.
 - **Years and months** come from the sale date.

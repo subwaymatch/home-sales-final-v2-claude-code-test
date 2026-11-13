@@ -8,7 +8,8 @@ standard library, so the two implementations share no code. Run it from the repo
 
 It reads data/college_town_home_sales.csv and prints every figure the page shows.
 Rules (from AGENTS.md):
-  - Valid price: 10,000 <= sale_price <= 5,000,000 (Q1, Q4, Q5, Q6). Q2 and Q3 also use all rows.
+  - Price range: 10,000 <= sale_price <= 5,000,000 (Q1, Q3, Q4, Q5, Q6). Q2 and Q9 use all rows.
+  - Q6 tax rule: 0 < tax_annual_amount < 10% of sale_price, on rows in the price range.
   - City = city + state, e.g. "Champaign, IL". Campus area = university column.
   - Days on market = contract_date - list_date, in days, only rows with both dates.
   - Year and month come from sale_date.
@@ -83,7 +84,7 @@ def main():
     by_city_valid = defaultdict(list)
     for r in valid_rows:
         by_city_valid[r["city"]].append(r["price"])
-    print("Q1. Median sale price by city (valid prices)")
+    print("Q1. Median sale price by city (prices from $10,000 to $5,000,000)")
     q1 = sorted(((c, statistics.median(p), len(p)) for c, p in by_city_valid.items()),
                 key=lambda t: -t[1])
     for city, med, n in q1:
@@ -163,17 +164,22 @@ def main():
     print(f"  Fastest: {', '.join(fast)}")
     print()
 
-    # Q6
-    burden_by_uni = defaultdict(list)
+    # Q6: aggregate ratio per campus area: sum of tax over sum of sale price, as a percent.
+    # Rows: sale_price from 10,000 to 5,000,000 inclusive, tax_annual_amount > 0 and < 10% of sale price.
+    tax_sum = defaultdict(float)
+    price_sum = defaultdict(float)
+    n_used = defaultdict(int)
     for r in valid_rows:
-        if r["tax"] is not None and 0 < r["tax"] < r["price"]:
-            burden_by_uni[r["university"]].append(r["tax"] / r["price"] * 100)
-    print("Q6. Median annual tax as a percent of sale price, by campus area")
+        if r["tax"] is not None and 0 < r["tax"] < 0.10 * r["price"]:
+            tax_sum[r["university"]] += r["tax"]
+            price_sum[r["university"]] += r["price"]
+            n_used[r["university"]] += 1
+    print("Q6. Aggregate annual tax as a percent of sale price, by campus area (sum of tax / sum of price)")
     q6 = []
     for u in unis:
-        med = statistics.median(burden_by_uni[u])
-        q6.append((u, med))
-        print(f"  {u:<50} {one_dp(med)}%  n={len(burden_by_uni[u]):,}")
+        ratio = tax_sum[u] / price_sum[u] * 100
+        q6.append((u, ratio))
+        print(f"  {u:<50} {one_dp(ratio)}%  n={n_used[u]:,}  tax ${tax_sum[u]:,.2f}  price ${price_sum[u]:,.0f}")
     print(f"  Highest burden: {', '.join(ties_at_extreme(q6, pick_max=True))}")
     print(f"  Lowest burden: {', '.join(ties_at_extreme(q6, pick_max=False))}")
 

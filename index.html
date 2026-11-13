@@ -73,7 +73,7 @@
     <section class="section" id="explore" aria-labelledby="explore-title">
       <h2 id="explore-title">Explore with filters and a map</h2>
       <p class="prompt">Choose filters below, or click a city on the map. The key numbers, charts, map and results table all update. The filters apply to this section and to the comparison below. They never change Q1 to Q6, which always use the full dataset.</p>
-      <p class="rule">Every filter applies the valid price rule (sale price from $10,000 to $5,000,000). Blank values are not counted as "no": see the Data and methods section.</p>
+      <p class="rule">Every filter applies the price range (sale price from $10,000 to $5,000,000). The range removes clear errors, such as a $0 sale, along with a small number of very high sales, some of which are real luxury homes. Blank values are not counted as "no": see the Data and methods section.</p>
 
       <div class="panel" aria-label="Filters">
         <div class="controls">
@@ -169,7 +169,7 @@
     <section class="section" id="compare" aria-labelledby="compare-title">
       <h2 id="compare-title">Compare two areas</h2>
       <p class="prompt">Pick two campus areas or cities to compare side by side.</p>
-      <p class="rule">Uses the valid price rule and the year, bedroom, price and home-feature filters above. The location filter is replaced by the two choices here.</p>
+      <p class="rule">Uses the price range and the year, bedroom, price and home-feature filters above. The location filter is replaced by the two choices here.</p>
       <div class="controls">
         <label for="cmp-a">Area A
           <select id="cmp-a"></select>
@@ -187,7 +187,7 @@
     <section class="question" id="q1" aria-labelledby="q1-title">
       <h2 id="q1-title"><span class="qlabel">Q1</span>Which city has the highest median sale price?</h2>
       <p class="prompt">Show the median sale price of every city.</p>
-      <p class="rule">Valid prices only. Full dataset; the filters above do not apply.</p>
+      <p class="rule">Sales priced from $10,000 to $5,000,000 only. Full dataset; the filters above do not apply. The range removes clear errors, such as a $0 sale, along with a small number of very high sales, some of which are real luxury homes.</p>
       <div class="answer" id="a1" aria-live="polite">Loading the data…</div>
       <div class="chart-wrap" id="w1"><canvas id="c1" role="img" aria-label="Horizontal bar chart of the median sale price in each of the 18 cities, highest first."></canvas></div>
       <details open><summary>All values in a table</summary><table id="t1" class="q-table stack-sm"></table></details>
@@ -205,11 +205,11 @@
 
     <!-- Q3 -->
     <section class="question" id="q3" aria-labelledby="q3-title">
-      <h2 id="q3-title"><span class="qlabel">Q3</span>Which cities change rank when the price rule is applied?</h2>
-      <p class="prompt">Rank the cities by mean sale price twice: once using all rows, and once using valid prices only. Which cities change rank, and by how many positions? Rank 1 is the highest mean.</p>
-      <p class="rule">Left: all rows. Right: valid prices only. Each line is one city.</p>
+      <h2 id="q3-title"><span class="qlabel">Q3</span>Which cities change rank when the price range is applied?</h2>
+      <p class="prompt">Rank the cities by mean sale price twice: once using all rows, and once using only sales with a sale_price from $10,000 to $5,000,000, inclusive. Which cities change rank, and by how many positions? Rank 1 is the highest mean.</p>
+      <p class="rule">Left: all sales. Right: only sales priced from $10,000 to $5,000,000, inclusive. Each line is one city. The range removes clear errors, such as a $0 sale, along with a small number of very high sales, some of which are real luxury homes.</p>
       <div class="answer" id="a3" aria-live="polite">Loading the data…</div>
-      <div class="chart-wrap" id="w3"><canvas id="c3" role="img" aria-label="Slope chart of each city's rank by mean sale price, all rows on the left and valid prices on the right. Cities that change rank are orange."></canvas></div>
+      <div class="chart-wrap" id="w3"><canvas id="c3" role="img" aria-label="Slope chart of each city's rank by mean sale price, all sales on the left and only sales in the price range on the right. Cities that change rank are orange."></canvas></div>
       <details open><summary>All ranks in a table</summary><table id="t3" class="q-table stack-sm"></table></details>
     </section>
 
@@ -217,7 +217,7 @@
     <section class="question" id="q4" aria-labelledby="q4-title">
       <h2 id="q4-title"><span class="qlabel">Q4</span>How did the median sale price change from 2024 to 2025, by campus area?</h2>
       <p class="prompt">For each campus area, what was the percent change in median sale price from 2024 to 2025? Which campus area had the largest increase, and which had a decrease?</p>
-      <p class="rule">Valid prices only. Year comes from the sale date.</p>
+      <p class="rule">Sales priced from $10,000 to $5,000,000 only. Year comes from the sale date. The range removes clear errors, such as a $0 sale, along with a small number of very high sales, some of which are real luxury homes.</p>
       <div class="answer" id="a4" aria-live="polite">Loading the data…</div>
       <div class="chart-wrap" id="w4"><canvas id="c4" role="img" aria-label="Horizontal bar chart of the percent change in median sale price from 2024 to 2025 for each campus area."></canvas></div>
       <details open><summary>All values in a table</summary><table id="t4" class="q-table stack-sm"></table></details>
@@ -227,7 +227,7 @@
     <section class="question" id="q5" aria-labelledby="q5-title">
       <h2 id="q5-title"><span class="qlabel">Q5</span>How long do homes stay on the market, by campus area?</h2>
       <p class="prompt">For each campus area, what is the median days on market? Which campus area is the slowest, and which is the fastest?</p>
-      <p class="rule">Valid prices only, and only rows with both a list date and a contract date. Days on market = contract date − list date.</p>
+      <p class="rule">Sales priced from $10,000 to $5,000,000 only, and only rows with both a list date and a contract date. The range removes clear errors, such as a $0 sale, along with a small number of very high sales, some of which are real luxury homes. Days on market = contract date − list date.</p>
       <div class="answer" id="a5" aria-live="polite">Loading the data…</div>
       <div class="chart-wrap" id="w5"><canvas id="c5" role="img" aria-label="Horizontal bar chart of the median days on market for each campus area, fastest first."></canvas></div>
       <details open><summary>All values in a table</summary><table id="t5" class="q-table stack-sm"></table></details>
@@ -236,10 +236,10 @@
     <!-- Q6 -->
     <section class="question" id="q6" aria-labelledby="q6-title">
       <h2 id="q6-title"><span class="qlabel">Q6</span>What share of the sale price goes to property tax, by campus area?</h2>
-      <p class="prompt">For each campus area, what is the median annual property tax as a percent of the sale price? Which campus area has the highest tax burden, and which has the lowest?</p>
-      <p class="rule">Valid prices, and rows where the annual tax is above $0 and below the sale price. For each sale, tax ÷ sale price × 100; the median of those percents is shown.</p>
+      <p class="prompt">For each campus area, what is the annual property tax as a percent of the sale price, with the tax and the sale price each added up across the area? Which campus area has the highest tax burden, and which has the lowest?</p>
+      <p class="rule">Sales priced from $10,000 to $5,000,000 only, with an annual tax above $0 and below 10% of the sale price. For each campus area: the total annual tax divided by the total sale price, as a percent. The range removes clear errors, such as a $0 sale, along with a small number of very high sales, some of which are real luxury homes.</p>
       <div class="answer" id="a6" aria-live="polite">Loading the data…</div>
-      <div class="chart-wrap" id="w6"><canvas id="c6" role="img" aria-label="Horizontal bar chart of the median annual property tax as a percent of sale price for each campus area, highest first."></canvas></div>
+      <div class="chart-wrap" id="w6"><canvas id="c6" role="img" aria-label="Horizontal bar chart of the annual property tax as a percent of total sale price for each campus area, highest first."></canvas></div>
       <details open><summary>All values in a table</summary><table id="t6" class="q-table stack-sm"></table></details>
     </section>
 
@@ -247,7 +247,7 @@
     <section class="question" id="q7" aria-labelledby="q7-title">
       <h2 id="q7-title"><span class="qlabel">Q7</span>For a chosen number of bedrooms, which city has the lowest median sale price?</h2>
       <p class="prompt">Show every city's median sale price and number of sales for that bedroom count.</p>
-      <p class="rule">Valid prices only. Choose a bedroom count to update the answer and chart.</p>
+      <p class="rule">Sales priced from $10,000 to $5,000,000 only. Choose a bedroom count to update the answer and chart. The range removes clear errors, such as a $0 sale, along with a small number of very high sales, some of which are real luxury homes.</p>
       <div class="controls">
         <label for="q7-beds">Bedrooms
           <select id="q7-beds"></select>
@@ -262,7 +262,7 @@
     <section class="question" id="q8" aria-labelledby="q8-title">
       <h2 id="q8-title"><span class="qlabel">Q8</span>For a chosen price range, which city has the shortest median days on market?</h2>
       <p class="prompt">Show every city's median days on market and the number of sales used. Type any price range.</p>
-      <p class="rule">Sales are kept only if the price is valid (from $10,000 to $5,000,000) and inside your range, and they have both a list date and a contract date. The range includes both ends.</p>
+      <p class="rule">Sales are kept only if the price is inside the $10,000 to $5,000,000 price range and inside your own range, and they have both a list date and a contract date. Both ends of your range are included. The range removes clear errors, such as a $0 sale, along with a small number of very high sales, some of which are real luxury homes.</p>
       <div class="controls">
         <label for="q8-min">Lowest price ($)
           <input id="q8-min" type="number" min="0" step="1000" value="250000">
@@ -280,7 +280,7 @@
     <section class="question" id="q9" aria-labelledby="q9-title">
       <h2 id="q9-title"><span class="qlabel">Q9</span>How many sales were recorded each month in a chosen city and year?</h2>
       <p class="prompt">For a selected city and year, how many sales were recorded in each month, January to December? Which month has the most sales?</p>
-      <p class="rule">All rows with a sale date, with no price rule. Months come from the sale date.</p>
+      <p class="rule">All rows with a sale date, with no price range applied. Months come from the sale date.</p>
       <div class="controls">
         <label for="q9-city">City
           <select id="q9-city"></select>
@@ -298,7 +298,7 @@
     <section class="question" id="q10" aria-labelledby="q10-title">
       <h2 id="q10-title"><span class="qlabel">Q10</span>For a campus area, budget and bedroom minimum, how far from campus are the sales?</h2>
       <p class="prompt">For a selected campus area, maximum budget, and minimum number of bedrooms, what is the median distance to campus, and how many sales meet the conditions? Type any budget.</p>
-      <p class="rule">Valid prices only (from $10,000 to $5,000,000), with sale price at or below the budget and at least the minimum bedrooms. A blank budget means no limit. A blank bedroom minimum counts as 0.</p>
+      <p class="rule">Sales priced from $10,000 to $5,000,000 only, with sale price at or below the budget and at least the minimum bedrooms. A blank budget means no limit. A blank bedroom minimum counts as 0. The range removes clear errors, such as a $0 sale, along with a small number of very high sales, some of which are real luxury homes.</p>
       <div class="controls">
         <label for="q10-campus">Campus area
           <select id="q10-campus"></select>
@@ -320,10 +320,10 @@
       <p class="prompt">Short findings from the data. Each one states its method and the numbers behind it.</p>
 
       <div class="question" id="p1" aria-labelledby="p1-title">
-        <h3 id="p1-title">P1. Data quality: how the valid price rule changes the results</h3>
-        <p class="rule">Problem 3 in the data description sheet: some prices are impossible. The rule is sale price from $10,000 to $5,000,000, inclusive. The "before" figures use all rows; the "after" figures use valid prices only. The same numbers are checked by <a href="scripts/check_p1_price_rule.py">scripts/check_p1_price_rule.py</a>.</p>
+        <h3 id="p1-title">P1. Data quality: how the price range changes the results</h3>
+        <p class="rule">Problem 3 in the data description sheet covers implausible prices. The price range is sale price from $10,000 to $5,000,000, inclusive. The "before" figures use all rows; the "after" figures use only sales in that range. The range removes clear errors, such as a $0 sale, along with a small number of very high sales, some of which are real luxury homes. The same numbers are checked by <a href="scripts/check_p1_price_rule.py">scripts/check_p1_price_rule.py</a>.</p>
         <div class="answer" id="ap1-text" aria-live="polite">Loading the data…</div>
-        <div class="chart-wrap" id="wp1"><canvas id="cp1" role="img" aria-label="Horizontal grouped bar chart of each city's mean sale price before and after the valid price rule, in rank order."></canvas></div>
+        <div class="chart-wrap" id="wp1"><canvas id="cp1" role="img" aria-label="Horizontal grouped bar chart of each city's mean sale price before and after the price range, in rank order."></canvas></div>
         <details open><summary>Before and after in a table</summary><table id="tp1" class="q-table stack-sm"></table></details>
       </div>
 
@@ -348,7 +348,7 @@
       <div class="panel">
         <h3 style="margin-top:0">Rules used</h3>
         <ul>
-          <li><strong>Valid price:</strong> a sale price from $10,000 to $5,000,000, inclusive. Used everywhere except Q2, Q3 and Q9, which use all rows as their questions state. Sales outside the range are removed from medians and counts, not from the dataset.</li>
+          <li><strong>Price range:</strong> a sale price from $10,000 to $5,000,000, inclusive. The range removes clear errors, such as a $0 sale, along with a small number of very high sales, some of which are real luxury homes. The range is a scope rule, not a judgement that every sale above $5,000,000 is an error. Each figure uses the range except Q2 and Q9, which use all rows, and Q3, which compares all rows with the range. Sales outside the range are left out of medians and counts, not removed from the dataset.</li>
           <li><strong>Days on market:</strong> contract date minus list date, in days, for rows with both dates. A blank date is not zero, so rows without both dates are left out of days-on-market figures. The list date is the listing that led to the sale; a sale that fell through and was re-listed keeps its original list date.</li>
           <li><strong>Year and month:</strong> from the sale date. Rows with a blank sale date (6 in the file) are left out of any year-based result.</li>
           <li><strong>City:</strong> city and state together, such as "Champaign, IL". <strong>Campus area:</strong> the <code>university</code> column, which is the nearest campus to each home.</li>
@@ -365,14 +365,14 @@
           <li><strong>Home features (garage, basement, fireplace):</strong> a blank means unknown, not "no". A filter set to "Has" or "No" leaves out homes whose value is blank. Blank basement and fireplace values are common, so those filters show fewer sales than the full set.</li>
           <li><strong>Living area:</strong> blank and zero values are treated as unknown. When the living-area range is narrowed, those homes are left out; at the full range they stay in.</li>
           <li><strong>Bedrooms, tax and distance:</strong> a blank value is left out of the calculations that need it. A bedroom filter leaves out homes with a blank bedroom count.</li>
-          <li><strong>Annual tax (Q6):</strong> rows with a blank tax, a tax of $0 or less, or a tax at or above the sale price are left out.</li>
+          <li><strong>Annual tax (Q6):</strong> rows with a blank tax, a tax of $0 or less, or a tax at or above 10% of the sale price are left out. The result is the total annual tax for each campus area divided by its total sale price.</li>
         </ul>
       </div>
 
       <div class="panel">
         <h3 style="margin-top:0">What the filters do</h3>
         <ul>
-          <li>The Explore filters, the map, the results table and the comparison use the valid price rule and the filters you set.</li>
+          <li>The Explore filters, the map, the results table and the comparison use the price range and the filters you set.</li>
           <li>Q1 to Q6 always use the full dataset with the rules stated in each section. The Explore filters do not change them.</li>
           <li>Q7 to Q10 keep their own controls and use the full dataset.</li>
           <li>The filter settings are stored in the page address, so a copied link opens the same view.</li>
