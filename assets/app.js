@@ -201,12 +201,12 @@
 
   // Chart titles and axis labels. x is the horizontal axis and y the vertical one, whichever way the chart runs.
   var CHART_META = {
-    c1: { title: 'Median sale price by city, valid prices', x: 'Median sale price', y: 'City' },
+    c1: { title: 'Median sale price by city, sales from $10,000 to $5,000,000', x: 'Median sale price', y: 'City' },
     c2: { title: 'Mean and median sale price by city, all rows', x: 'Sale price', y: 'City' },
-    c3: { title: 'Rank by mean sale price: all rows and valid prices', x: 'Price rule', y: 'Rank by mean (1 is highest)' },
+    c3: { title: 'Rank by mean sale price: all sales and sales in the price range', x: 'Sales used', y: 'Rank by mean (1 is highest)' },
     c4: { title: 'Change in median sale price, 2024 to 2025, by campus area', x: 'Percent change', y: 'Campus area' },
     c5: { title: 'Median days on market by campus area', x: 'Days from listing to contract', y: 'Campus area' },
-    c6: { title: 'Median annual tax as a percent of sale price, by campus area', x: 'Percent of sale price', y: 'Campus area' },
+    c6: { title: 'Annual property tax as a percent of total sale price, by campus area', x: 'Tax as a percent of sale price', y: 'Campus area' },
     c7: { title: 'Median sale price by city for the chosen bedroom count', x: 'Median sale price', y: 'City' },
     c8: { title: 'Median days on market by city for the chosen price range', x: 'Days from listing to contract', y: 'City' },
     c9: { title: 'Sales by month for the chosen city and year', x: 'Month', y: 'Sales' },
@@ -214,7 +214,7 @@
     'cx-year': { title: 'Sales per sale year under the current filters', x: 'Sale year', y: 'Sales' },
     'cx-beds': { title: 'Median sale price by bedrooms under the current filters', x: 'Bedrooms', y: 'Median sale price' },
     'c-compare': { title: 'Median sale price: Area A and Area B', x: 'Median sale price', y: 'Area' },
-    cp1: { title: 'Mean sale price by city, before and after the valid price rule', x: 'Mean sale price', y: 'City' }
+    cp1: { title: 'Mean sale price by city, before and after the price range', x: 'Mean sale price', y: 'City' }
   };
 
   function chartTitleOpts(text) {
@@ -227,8 +227,38 @@
              font: { family: FONT_SANS, size: 12, weight: '600' } };
   }
 
+  // On narrow screens, long category names for horizontal bars are split over several lines,
+  // so the names and the axis title fit beside the bars.
+  function splitLabel(text, maxChars) {
+    var words = text.split(' ');
+    var lines = [];
+    var current = '';
+    words.forEach(function (w) {
+      if (current && (current + ' ' + w).length > maxChars) {
+        lines.push(current);
+        current = w;
+      } else {
+        current = current ? current + ' ' + w : w;
+      }
+    });
+    if (current) { lines.push(current); }
+    return lines.length > 1 ? lines : text;
+  }
+
   function drawChart(id, config) {
     if (charts[id]) { charts[id].destroy(); }
+    if (config.type === 'bar' && config.options && config.options.indexAxis === 'y' &&
+        window.innerWidth < 600 && config.data && config.data.labels) {
+      config.data.labels = config.data.labels.map(function (l) {
+        return typeof l === 'string' ? splitLabel(l, 18) : l;
+      });
+      // Show every name (no skipping), and give each bar enough height for its wrapped lines.
+      var o = config.options;
+      o.scales = o.scales || {};
+      o.scales.y = Object.assign({}, o.scales.y || {}, { ticks: Object.assign({ autoSkip: false }, (o.scales.y && o.scales.y.ticks) || {}) });
+      var wrapEl = el(id) && el(id).parentNode;
+      if (wrapEl) { wrapEl.style.height = Math.max(260, config.data.labels.length * 52 + 100) + 'px'; }
+    }
     var meta = CHART_META[id];
     if (meta) {
       var o = config.options = config.options || {};
@@ -1041,10 +1071,11 @@
 
     var medSame = roundHalfUp(wholeMedA, 0) === roundHalfUp(wholeMedB, 0);
     var p = [];
-    p.push('The data description sheet lists impossible prices: ' + plural(below.length, 'sale') + ' under $10,000, including one at ' +
+    p.push('The price range is a scope rule: it keeps sales priced from $10,000 to $5,000,000, inclusive, and leaves out <strong>' +
+      fmtInt(removed) + '</strong> rows. That is ' + plural(below.length, 'sale') + ' under $10,000, including one at ' +
       fmtUsd(minRow.price) + ', and ' + fmtInt(above.length) + ' over $5,000,000, up to ' + fmtUsd(maxRow.price) +
-      '. The valid price rule keeps sales from $10,000 to $5,000,000, inclusive, and removes the other <strong>' +
-      fmtInt(removed) + '</strong> rows. The rule is applied everywhere except Q2, Q3 and Q9, which use all rows as their questions state. No row is deleted from the dataset; the rule only changes which sales are counted.');
+      '. The range removes clear errors, such as the $0 sale, along with a small number of very high sales, some of which are real luxury homes. ' +
+      'Q2 and Q9 use all rows, and Q3 compares all rows with the range, as their questions state. No row is deleted from the dataset; the range only changes which sales are counted.');
     p.push('<strong>Means moved; medians barely did.</strong> Across the whole dataset the mean falls from ' + fmtUsd(wholeMeanB) +
       ' to ' + fmtUsd(wholeMeanA) + ', a change of ' + fmtPct(wholeMeanChg, false) + '. The median ' +
       (medSame ? 'stays at ' + fmtUsd(wholeMedB) + '.' : 'moves from ' + fmtUsd(wholeMedB) + ' to ' + fmtUsd(wholeMedA) + '.') +
@@ -1057,7 +1088,7 @@
     } else {
       p.push('No city changes rank by mean.');
     }
-    p.push('<strong>What the rule cannot fix.</strong> It only removes prices outside a fixed range. A wrong price inside the range, such as a $600,000 entry that should read $60,000, stays in the data and still affects the results. The rule also leaves the other problems in the sheet alone: blank dates, addresses shared by several units, and an unreliable home type. A mean responds to any single sale, which is why the results on this page use medians except where a question asks for a mean.');
+    p.push('<strong>What the range cannot fix.</strong> It only removes prices outside a fixed range. A wrong price inside the range, such as a $600,000 entry that should read $60,000, stays in the data and still affects the results. The range also leaves the other problems in the sheet alone: blank dates, addresses shared by several units, and an unreliable home type. A mean responds to any single sale, which is why the results on this page use medians except where a question asks for a mean.');
     setAnswer('ap1-text', p);
 
     var headers = ['City', 'Sales removed', 'Mean, before', 'Mean, after', 'Median, before', 'Median, after', 'Rank by mean, before', 'Rank by mean, after'];
@@ -1075,7 +1106,7 @@
         labels: names,
         datasets: [
           { label: 'Mean, all rows (before)', data: rows.map(function (r) { return r.mb; }), backgroundColor: QUIET_DARK },
-          { label: 'Mean, valid prices (after)', data: rows.map(function (r) { return r.ma; }), backgroundColor: TEAL }
+          { label: 'Mean, price range (after)', data: rows.map(function (r) { return r.ma; }), backgroundColor: TEAL }
         ]
       },
       options: {
@@ -1114,11 +1145,11 @@
     var lead = '<strong>' + esc(joinNames(topNames)) + '</strong> ' +
       (top.length > 1 ? 'tie for' : 'has') + ' the highest median sale price, at <strong>' +
       fmtUsd(first.value) + '</strong>' +
-      (top.length === 1 ? ' from ' + plural(first.n, 'valid sale') + '.' : '.');
+      (top.length === 1 ? ' from ' + plural(first.n, 'sale') + ' in range' + '.' : '.');
     var tail = next ? ' The next highest is ' + esc(next.name) + ' at ' + fmtUsd(next.value) + '.' : '';
     setAnswer('a1', [lead + tail]);
 
-    fillTable('t1', ['City', 'Median sale price', 'Valid sales'], rows.map(function (r) {
+    fillTable('t1', ['City', 'Median sale price', 'Sales in range'], rows.map(function (r) {
       return [r.name, fmtUsd(r.value), fmtInt(r.n)];
     }));
 
@@ -1144,7 +1175,7 @@
           valueLabels: true,
           tooltip: { callbacks: { label: function (ctx) {
             var r = rows[ctx.dataIndex];
-            return fmtUsd(r.value) + ' from ' + plural(r.n, 'valid sale');
+            return fmtUsd(r.value) + ' from ' + plural(r.n, 'sale') + ' in range';
           } } }
         },
         scales: { x: { ticks: { maxTicksLimit: 6, callback: function (v) { return fmtUsd(v); } } } }
@@ -1243,7 +1274,7 @@
       var dir = r.valid < r.all ? 'up' : 'down';
       return esc(r.name) + ' moves from ' + ordinal(r.all) + ' to ' + ordinal(r.valid) + ' (' +
         places + ' place' + (places === 1 ? '' : 's') + ' ' + dir + '; ' +
-        plural(r.invalid, 'sale') + ' outside the valid price range)';
+        plural(r.invalid, 'sale') + ' outside the price range)';
     });
     var intro = changed.length === 0
       ? 'No city changes rank.'
@@ -1251,7 +1282,7 @@
         parts.join('; ') + '.';
     setAnswer('a3', [intro + ' The other ' + fmtInt(rows.length - changed.length) + ' cities keep their rank.']);
 
-    fillTable('t3', ['City', 'Rank, all rows', 'Rank, valid prices', 'Change'], rows.map(function (r) {
+    fillTable('t3', ['City', 'Rank, all sales', 'Rank, price range', 'Change'], rows.map(function (r) {
       var d = r.all - r.valid;
       return [r.name, String(r.all), String(r.valid), d === 0 ? 'no change' : (d > 0 ? '+' : '') + d + ' (' + (d > 0 ? 'up' : 'down') + ')'];
     }));
@@ -1261,7 +1292,7 @@
     drawChart('c3', {
       type: 'line',
       data: {
-        labels: ['All rows', 'Valid prices only'],
+        labels: ['All sales', 'Price range only'],
         datasets: rows.map(function (r) {
           var hi = changedNames.indexOf(r.name) >= 0;
           return {
@@ -1413,11 +1444,15 @@
   }
 
   function renderQ6() {
-    var valid = D.filter(function (r) { return r.valid && r.tax !== null && r.tax > 0 && r.tax < r.price; });
+    // Aggregate ratio per campus area: the total annual tax divided by the total sale price, as a percent.
+    // Rows: sale price from $10,000 to $5,000,000 inclusive, and 0 < tax < 10% of the sale price.
     var rows = [];
-    groupBy(valid, function (r) { return r.uni; }).forEach(function (rs, uni) {
-      var pct = rs.map(function (r) { return r.tax / r.price * 100; });
-      rows.push({ name: uni, value: median(pct), n: pct.length });
+    groupBy(D.filter(function (r) { return r.valid && r.tax !== null && r.tax > 0 && r.tax < 0.10 * r.price; }),
+      function (r) { return r.uni; }).forEach(function (rs, uni) {
+      var taxSum = 0;
+      var priceSum = 0;
+      rs.forEach(function (r) { taxSum += r.tax; priceSum += r.price; });
+      rows.push({ name: uni, value: taxSum / priceSum * 100, n: rs.length });
     });
     rows.sort(function (a, b) { return b.value - a.value; });
 
@@ -1427,10 +1462,11 @@
       '<strong>Highest tax burden:</strong> ' + esc(joinNames(hiBurden.map(function (r) { return r.name; }))) +
         ', at <strong>' + fmtPct(hiBurden[0].value, false) + '</strong> of the sale price.',
       '<strong>Lowest tax burden:</strong> ' + esc(joinNames(loBurden.map(function (r) { return r.name; }))) +
-        ', at <strong>' + fmtPct(loBurden[0].value, false) + '</strong>.'
+        ', at <strong>' + fmtPct(loBurden[0].value, false) + '</strong>.',
+      'Each figure is the total annual tax for the area divided by the total sale price for the same sales.'
     ]);
 
-    fillTable('t6', ['Campus area', 'Median tax as % of sale price', 'Sales used'], rows.map(function (r) {
+    fillTable('t6', ['Campus area', 'Tax as % of sale price', 'Sales used'], rows.map(function (r) {
       return [r.name, fmtPct(r.value, false), fmtInt(r.n)];
     }));
 
@@ -1442,7 +1478,7 @@
       type: 'bar',
       data: {
         labels: names,
-        datasets: [{ label: 'Median tax as % of sale price', data: rows.map(function (r) { return r.value; }),
+        datasets: [{ label: 'Tax as % of sale price', data: rows.map(function (r) { return r.value; }),
                      backgroundColor: colorsFor(names, hi, ACCENT, QUIET) }]
       },
       options: {
@@ -1478,7 +1514,7 @@
       return !rows.some(function (r) { return r.name === c; });
     });
     if (!rows.length) {
-      setAnswer('a7', ['No valid sales with ' + label + ' are recorded in any city.']);
+      setAnswer('a7', ['No sales in the price range with ' + label + ' are recorded in any city.']);
     } else {
       var low = extremes(rows, false, 0);
       var lowNames = low.map(function (r) { return r.name; });
@@ -1490,12 +1526,12 @@
       var highest = rows[rows.length - 1];
       paragraphs.push('The highest is ' + esc(highest.name) + ' at ' + fmtUsd(highest.value) + ' from ' + plural(highest.n, 'sale') + '.');
       if (missing.length) {
-        paragraphs.push('No valid sales with ' + label + ' are recorded in ' + esc(joinNames(missing)) + ', so they are not shown.');
+        paragraphs.push('No sales in the price range with ' + label + ' are recorded in ' + esc(joinNames(missing)) + ', so they are not shown.');
       }
       setAnswer('a7', paragraphs);
     }
 
-    fillTable('t7', ['City', 'Median sale price', 'Valid sales'], rows.map(function (r) {
+    fillTable('t7', ['City', 'Median sale price', 'Sales in range'], rows.map(function (r) {
       return [r.name, fmtUsd(r.value), fmtInt(r.n)];
     }));
 
@@ -1520,7 +1556,7 @@
           valueLabels: true,
           tooltip: { callbacks: { label: function (ctx) {
             var r = rows[ctx.dataIndex];
-            return fmtUsd(r.value) + ' from ' + plural(r.n, 'valid sale');
+            return fmtUsd(r.value) + ' from ' + plural(r.n, 'sale') + ' in range';
           } } }
         },
         scales: { x: { ticks: { maxTicksLimit: 6, callback: function (v) { return fmtUsd(v); } } } }
@@ -1768,7 +1804,7 @@
     var lowNames = low.map(function (r) { return r.name; });
     el('finding-1').innerHTML = '<strong>' + esc(joinNames(topNames)) + '</strong> ' +
       (top.length > 1 ? 'tie for' : 'has') + ' the highest median sale price, at ' + fmtUsd(top[0].value) +
-      (top.length === 1 ? ' from ' + plural(top[0].n, 'valid sale') : '') + '. ' +
+      (top.length === 1 ? ' from ' + plural(top[0].n, 'sale') + ' in range' : '') + '. ' +
       esc(joinNames(lowNames)) + (low.length > 1 ? ' tie for' : ' has') + ' the lowest, at ' + fmtUsd(low[0].value) + '.';
 
     var dayRows = [];
@@ -1789,11 +1825,11 @@
     var medB = median(all.map(function (r) { return r.price; }));
     var medA = median(valid.map(function (r) { return r.price; }));
     var meanChg = (meanA - meanB) / meanB * 100;
-    el('finding-3').innerHTML = 'The valid price rule removes ' + fmtInt(removed) + ' of ' + fmtInt(all.length) +
+    el('finding-3').innerHTML = 'The price range leaves out ' + fmtInt(removed) + ' of ' + fmtInt(all.length) +
       ' sales (' + fmtPct(removed / all.length * 100, false) + '). Across the whole dataset the mean ' +
       (meanChg < 0 ? 'falls' : 'rises') + ' ' + fmtPct(Math.abs(meanChg), false) + ', but the median ' +
       (roundHalfUp(medA, 0) === roundHalfUp(medB, 0) ? 'stays at ' + fmtUsd(medB) : 'moves from ' + fmtUsd(medB) + ' to ' + fmtUsd(medA)) +
-      '. The rule changes the averages much more than the typical sale.';
+      '. The range changes the averages much more than the typical sale.';
   }
 
   function renderAll() {
@@ -1891,7 +1927,7 @@
   function showStats() {
     var valid = D.filter(function (r) { return r.valid; }).length;
     el('stat-rows').textContent = fmtInt(D.length);
-    el('stat-rows').title = fmtInt(valid) + ' of them have a valid price';
+    el('stat-rows').title = fmtInt(valid) + ' of them are priced from $10,000 to $5,000,000';
   }
 
   function fail(message) {
